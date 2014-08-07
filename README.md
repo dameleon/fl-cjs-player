@@ -2,18 +2,29 @@
 
 本プロダクトは以下の機能を提供します。
 
-- FlashCC からパブリッシュした CreateJS の再生支援
-    - アセットの読み込み
-    - 再生
-    - 停止
-    - ポーズ
-    - レジューム  
+- FlCjsPlayer
 
-- Retina (高解像度) 向けの画質調整対応
-- フルスクリーン、画面回転時の描画サイズ調整対応
-- 簡易的な UserAgent 判定
-- CjsPlayer.AssetLoader による manifest に記述されたアセットの読み込み
-- CjsPlayer.Q による、複数個のコールバックを管理しながら全ての完了を管理するキューイングの仕組み
+    - FlashCC からパブリッシュした CreateJS ファイルに対する下記の動作
+
+        - 読み込み
+        - 再生
+        - 停止
+        - ポーズ
+        - レジューム  
+        - 破棄
+
+    - Retina (高解像度) 向けの画質調整対応
+    - フルスクリーン、画面回転時の描画サイズ調整対応
+    - 簡易的な UserAgent 判定 (`FlCjsPlayer.env`)
+
+- CjsPlayer.AssetLoader 
+
+    - lib.properties.manifest に記載されたアセットの読み込み
+    - base64 ソースへの対応
+
+- CjsPlayer.Q
+
+    - 複数のコールバックハンドリング
 
 
 ## Files
@@ -31,8 +42,6 @@ src
 ```
 
 通常、使用するだけであれば dist/cjs-player.all.js を読み込んでください。
-
-**注意**
 
 
 ## Usage
