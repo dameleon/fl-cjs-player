@@ -12,7 +12,7 @@ var banner = '/*! <%= pkg.name %> // @version <%= pkg.version %>, @license <%= p
 // jsduck がディレクトリ内のファイルを全消しする fxxk な仕様なので、.git ファイルを一旦逃がす
 gulp.task('document', shell.task([
     'mv docs/.git ./.git_docs',
-    'jsduck src/*.js src/**/*.js --output docs',
+    'jsduck src/*.js --output docs',
     'mv ./.git_docs docs/.git'
 ]));
 

@@ -20,6 +20,6 @@
     "latedef"     : false,
     "validthis"   : true,
     "predef"      : [
-        "CjsPlayer"
+        "FlCjsPlayer"
     ]
 }

@@ -46,7 +46,7 @@ src
 
 ## Usage
 
-詳細なドキュメントは [API Documentation]() で確認できます。
+詳細なドキュメントは [API Documentation](http://dameleon.github.io/fl-cjs-player/) で確認できます。
 
 ### CreateJS Player
 
@@ -67,7 +67,7 @@ var player = new CjsPlayer(
 // autostart: true なので読み込み終了後、再生が始まります
 ```
 
-- 詳細なオプションは [ここ]() にあります
+- 詳細なオプションは [ここ](http://dameleon.github.io/fl-cjs-player/#!/api/FlCjsPlayer) にあります
 
 
 ###  CreateJS Player AssetLoader

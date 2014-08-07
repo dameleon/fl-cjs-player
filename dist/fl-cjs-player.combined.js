@@ -121,7 +121,7 @@ FlCjsPlayer.env = env;
 /**
  * Object, Array の deep extend を行う
  *
- * @memver FlCjsPlayer
+ * @member FlCjsPlayer
  * @method extend
  * @static
  */
@@ -275,7 +275,6 @@ function _play() {
     if (this.state !== STATES.LOADED) {
         return;
     }
-    var that = this;
     var setting = this.setting;
     var properties = this.properties;
     var stage = this.stage;
