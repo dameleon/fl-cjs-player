@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">;(function(global, undefined) {
+&#39;use strict&#39;;
+
+var document = global.document;
+
+if (!global.FlCjsPlayer) {
+    throw new Error(&#39;&quot;FlCjsPlayer&quot; does not exist in global&#39;);
+}
+
+var defaults = {
+    basePath: &#39;&#39;
+};
+
+<span id='FlCjsPlayer-AssetLoader'>/**
+</span> * 汎用的なアセットローダ(仮)
+ *
+ * @class FlCjsPlayer.AssetLoader
+ * @param {Object} option
+ *      オプション設定のためのオブジェクト
+ * @param {String} [option.basePath=&#39;&#39;]
+ *      アセットをロードするためのベースパスを設定
+ */
+function AssetLoader(option) {
+    this.setting = FlCjsPlayer.extend({}, defaults, option);
+    this.listeners = {
+        // EVENT: []
+    };
+    this.queue = {
+        // qid: Q
+    };
+    this.tmpFiles = {
+        // qid: [ file ,...]
+    };
+}
+
+AssetLoader.prototype = {
+    constructor              : AssetLoader,
+    handleEvent              : _handleEvent,
+    handleManifestLoaded     : _handleManifestLoaded,
+    loadWithManifests        : _loadWithManifests,
+    off                      : _off,
+    on                       : _on,
+    _fire                    : _fire,
+    _getListenerListByType   : _getListenerListByType,
+    _loadItem                : _loadItem,
+    _pushToTemporaryFileList : _pushToTemporaryFileList,
+    _tickQueue               : _tickQueue,
+};
+
+
+<span id='FlCjsPlayer-AssetLoader-method-handleEvent'>/**
+</span> * Image インスタンスに対するイベントハンドラ
+ * 現状 load or error を受け取って処理する
+ *
+ * @method handleEvent
+ * @member FlCjsPlayer.AssetLoader
+ * @param {Object} ev
+ *      イベントオブジェクト
+ */
+function _handleEvent(ev) {
+    var target = ev.target;
+
+    target.removeEventListener(&#39;load&#39;, this);
+    target.removeEventListener(&#39;error&#39;, this);
+
+    switch (ev.type) {
+        case &#39;load&#39;:
+            var qid = target.__qid;
+
+            this._fire(&#39;fileLoaded&#39;, target);
+            this._pushToTemporaryFileList(qid, target);
+            this._tickQueue(qid);
+            break;
+        case &#39;error&#39;:
+            this._fire(&#39;error&#39;, target);
+            break;
+    }
+}
+
+<span id='FlCjsPlayer-AssetLoader-method-loadWithManifests'>/**
+</span> * Flash for HTML5 の CreateJS に付加される manifest 情報を元に、アセット群を読み込む
+ *
+ * @method loadWithManifests
+ * @member FlCjsPlayer.AssetLoader
+ * @param {Array} manifests
+ *      manifest 情報が入った Array
+ */
+function _loadWithManifests(manifests) {
+    if (!Array.isArray(manifests)) {
+        throw new Error(&#39;Argument type error. First argument must be Array&#39;);
+    } else if (manifests.length &lt; 1) {
+        console.warn(&#39;Passed through empty manifests&#39;);
+        this._fire(&#39;manifestLoaded&#39;);
+        return;
+    }
+    var that = this;
+    var qid;
+    var q = new FlCjsPlayer.Q(function() {
+        that.handleManifestLoaded(qid);
+    });
+
+    qid = q.id;
+    this.queue[qid] = q;
+    for (var i = 0, manifest; manifest = manifests[i]; i++) {
+        q.add();
+        this._loadItem(qid, manifest);
+    }
+}
+
+<span id='FlCjsPlayer-AssetLoader-method-_loadItem'>/**
+</span> * QueueID と1つの manifest 情報から Image インスタンスを生成し、イベントと読み込みの処理を行う
+ *
+ * @method _loadItem
+ * @member FlCjsPlayer.AssetLoader
+ * @private
+ * @param {Number} qid
+ *      読み込みを行う Queue ハンドラの ID
+ * @param {Object} manifest
+ *      読み込む manifest のデータ
+ */
+function _loadItem(qid, manifest) {
+    var tag = new Image();
+    var src = (this.setting.basePath || &#39;&#39;) + manifest.src;
+
+    tag.addEventListener(&#39;load&#39;, this);
+    tag.addEventListener(&#39;error&#39;, this);
+    tag.id = manifest.id;
+    tag.__qid = qid;
+    tag.src = src;
+}
+
+<span id='FlCjsPlayer-AssetLoader-method-_handleManifestLoaded'>/**
+</span> * manifests の読み込み完了処理を行う
+ *
+ * @method _handleManifestLoaded
+ * @member FlCjsPlayer.AssetLoader
+ * @private
+ * @param {Number} qid
+ *      完了処理を行う QueueID
+ */
+function _handleManifestLoaded(qid) {
+    var tmpFileList = this.tmpFiles[qid];
+
+    this.tmpFiles[qid] = null;
+    delete this.tmpFiles[qid];
+    this.queue[qid] = null;
+    delete this.queue[qid];
+    this._fire(&#39;manifestsLoaded&#39;, tmpFileList);
+}
+
+<span id='FlCjsPlayer-AssetLoader-method-on'>/**
+</span> * イベントハンドラの登録を行う
+ *
+ * @method on
+ * @member FlCjsPlayer.AssetLoader
+ * @param {String} type
+ *      イベント名
+ * @param {Function} listener
+ *      イベントハンドラ
+ */
+function _on(type, listener) {
+    var listenerList = this._getListenerListByType(type);
+
+    listenerList.push(listener);
+}
+
+<span id='FlCjsPlayer-AssetLoader-method-off'>/**
+</span> * イベントハンドラの登録解除を行う
+ *
+ * @method off
+ * @member FlCjsPlayer.AssetLoader
+ * @param {String} type
+ *      イベント名
+ * @param {Function} listener
+ *      イベントハンドラ
+ */
+function _off(type, listener) {
+    var listenerList = this._getListenerListByType(type);
+    var index = listenerList.indexOf(listener);
+
+    if (listenerList.length &lt; 1 || index &lt; 0) {
+        return;
+    }
+    listenerList.splice(index, 1);
+}
+
+<span id='FlCjsPlayer-AssetLoader-method-_fire'>/**
+</span> * イベントを発火する
+ *
+ * @method _fire
+ * @member FlCjsPlayer.AssetLoader
+ * @private
+ * @param {String} type
+ *      発火するイベント名
+ * @param {Any} [argument]
+ *      イベントオブジェクトの .result プロパティに紐付けるデータ
+ */
+function _fire() {
+    var args = [].slice.call(arguments);
+    var type = args.shift();
+    var listenerList = this._getListenerListByType(type);
+
+    if (listenerList.length &lt; 1) {
+        return;
+    }
+    var ev = __createEvent(type);
+
+    ev.result = (args.length &gt; 1) ? args : args[0];
+    for (var i = 0, listener; listener = listenerList[i]; i++) {
+        listener.call(null, ev);
+    }
+}
+
+<span id='FlCjsPlayer-AssetLoader-method-_getListenerListByType'>/**
+</span> * イベントハンドラをもつ配列を取得する
+ *
+ * @method _getListenerListByType
+ * @member FlCjsPlayer.AssetLoader
+ * @private
+ * @param {String} type
+ *      取得するイベントの名前
+ * @return {Array}
+ *      イベントハンドラを持つ配列
+ */
+function _getListenerListByType(type) {
+    return (Array.isArray(this.listeners[type])) ? this.listeners[type] : (this.listeners[type] = []);
+}
+
+<span id='FlCjsPlayer-AssetLoader-method-_pushToTemporaryFileList'>/**
+</span> * 読み込みが完了したファイルを QueueID を元に一時的な配列へ保存する
+ *
+ * @method _pushToTemporaryFileList
+ * @member FlCjsPlayer.AssetLoader
+ * @private
+ * @param {Number} qid
+ *      保存先の QueueID
+ * @param {Object} file
+ *      保存するファイルのオブジェクトデータ
+ *
+ */
+function _pushToTemporaryFileList(qid, file) {
+    var list = (Array.isArray(this.tmpFiles[qid])) ? this.tmpFiles[qid] : (this.tmpFiles[qid] = []);
+
+    list[list.length] = file;
+}
+
+<span id='FlCjsPlayer-AssetLoader-method-_tickQueue'>/**
+</span> * QueueID を元に Queue を進める
+ *
+ * @method _tickQueue
+ * @member FlCjsPlayer.AssetLoader
+ * @private
+ * @param {Number} qid
+ *      対象の QueueID
+ */
+function _tickQueue(qid) {
+    this.queue[qid].tick();
+}
+
+
+// private methods
+<span id='FlCjsPlayer-AssetLoader-method-__createEvent'>/**
+</span> * イベントオブジェクトを生成する
+ *
+ * @method __createEvent
+ * @member FlCjsPlayer.AssetLoader
+ * @private
+ * @param {String} type
+ *      生成するイベントのタイプ
+ */
+function __createEvent(type) {
+    var event = document.createEvent(&#39;Event&#39;);
+
+    event.initEvent(type, true, true);
+    return event;
+}
+
+// export
+global.FlCjsPlayer.AssetLoader = AssetLoader;
+
+
+})(this.self || global, void 0);
+</pre>
+</body>
+</html>

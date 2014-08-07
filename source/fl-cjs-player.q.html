@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">;(function(global, undefined) {
+&#39;use strict&#39;;
+
+if (!global.FlCjsPlayer) {
+    throw new Error(&#39;&quot;FlCjsPlayer&quot; does not exist in global&#39;);
+}
+
+var qid = 0;
+
+<span id='FlCjsPlayer-Q'>/**
+</span> * キューの発行、完了を管理する
+ *
+ * @class FlCjsPlayer.Q
+ * @param {Function} callback
+ *      インスタンス化時に渡すコールバックハンドラ
+ */
+function Q(callback) {
+    this.id = qid++;
+    this.length = 0;
+    this.listeners = [];
+    if (callback) {
+        this.addHandler(callback);
+    }
+}
+
+Q.prototype = {
+    constructor: Q,
+    add        : _add,
+    addHandler : _addHandler,
+    fire       : _fire,
+    ing        : _ing,
+    tick       : _tick
+};
+
+<span id='FlCjsPlayer-Q-method-addHandler'>/**
+</span> * コールバックハンドラを登録する
+ *
+ * @method addHandler
+ * @member FlCjsPlayer.Q
+ * @param {Function} callback
+ *      登録するコールバック関数
+ */
+function _addHandler(callback) {
+    if (typeof callback !== &#39;function&#39;) {
+        throw new Error(&#39;Argument type error. First argument must be Function&#39;);
+    }
+    this.listeners.push(callback);
+}
+
+<span id='FlCjsPlayer-Q-method-ing'>/**
+</span> * 待機キューを発行し、コールバック用の関数を返す。命名の由来は Queueing
+ *
+ * @method ing
+ * @member FlCjsPlayer.Q
+ * @param {Function} [callback]
+ *      コールバック用の関数が発火した際に呼ぶオプショナルなコールバック関数
+ */
+function _ing(callback) {
+    var that = this;
+
+    this.length++;
+    return function() {
+        var args = arguments;
+
+        that.length--;
+        callback &amp;&amp; callback.apply(null, args);
+        if (that.length &lt; 1) {
+            that.fire.apply(that, args);
+        }
+    };
+}
+
+<span id='FlCjsPlayer-Q-method-fire'>/**
+</span> * 全てのコールバックハンドラを発火する
+ *
+ * @method fire
+ * @member FlCjsPlayer.Q
+ * @param {Any} args
+ *      コールバックハンドラへ渡す引数。複数指定可能。
+ */
+function _fire() {
+    var args = arguments;
+    var listeners = this.listeners;
+    var listener;
+
+    while (!!(listener = listeners.shift())) {
+        listener.apply(null, args);
+    }
+}
+
+<span id='FlCjsPlayer-Q-method-tick'>/**
+</span> * キューを進める
+ *
+ * @method tick
+ * @member FlCjsPlayer.Q
+ * @param {Any} args
+ *      キューが発火する場合に、コールバックハンドラへ渡す引数。複数指定可能。
+ */
+function _tick() {
+    this.length--;
+    if (this.length &lt; 1) {
+        this.fire.apply(this, arguments);
+    }
+}
+
+<span id='FlCjsPlayer-Q-method-add'>/**
+</span> * キューを発行する
+ *
+ * @method add
+ * @member FlCjsPlayer.Q
+ */
+function _add() {
+    this.length++;
+}
+
+
+// export
+global.FlCjsPlayer.Q = Q;
+
+
+})(this.self || global, void 0);
+</pre>
+</body>
+</html>
