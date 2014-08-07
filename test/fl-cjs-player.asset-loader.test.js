@@ -5,14 +5,14 @@ var assert = require('power-assert');
 
 describe('CreateJS Player AssetLoader', function() {
     it('should exist constructor in global', function() {
-        var FLCjsPlayer = global.FLCjsPlayer;
+        var FlCjsPlayer = global.FlCjsPlayer;
 
-        assert(typeof FLCjsPlayer.AssetLoader === 'function');
+        assert(typeof FlCjsPlayer.AssetLoader === 'function');
     });
     it('should load image with manifests', function(done) {
         // from fixture
         var manifests = lib.properties.manifest;
-        var loader = new FLCjsPlayer.AssetLoader();
+        var loader = new FlCjsPlayer.AssetLoader();
 
         loader.on('fileLoaded', function(ev) {
             var result = ev.result;
@@ -41,7 +41,7 @@ describe('CreateJS Player AssetLoader', function() {
         loader.loadWithManifests(manifests);
     });
     it('should trigger error event when source not found', function(done) {
-        var loader = new FLCjsPlayer.AssetLoader();
+        var loader = new FlCjsPlayer.AssetLoader();
 
         loader.on('error', function(ev) {
             var result = ev.result;
@@ -54,7 +54,7 @@ describe('CreateJS Player AssetLoader', function() {
         ]);
     });
     it('should throw error when broken manifests', function() {
-        var loader = new FLCjsPlayer.AssetLoader();
+        var loader = new FlCjsPlayer.AssetLoader();
 
         assert.throws(function() {
             loader.loadWithManifests();

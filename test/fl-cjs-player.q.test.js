@@ -5,12 +5,12 @@ var assert = require('power-assert');
 
 describe('CreateJS Player Q', function() {
     it('should exist constructor in global', function() {
-        var CjsPlayer = global.CjsPlayer;
+        var FlCjsPlayer = global.FlCjsPlayer;
 
-        assert(typeof CjsPlayer.Q === 'function');
+        assert(typeof FlCjsPlayer.Q === 'function');
     });
     it('should call handlers with queueing', function(done) {
-        var q = new CjsPlayer.Q(function() {
+        var q = new FlCjsPlayer.Q(function() {
             assert.ok(true);
             done();
         });
@@ -20,7 +20,7 @@ describe('CreateJS Player Q', function() {
         setTimeout(q.ing());
     });
     it('should call handlers with add and tick', function(done) {
-        var q = new CjsPlayer.Q(function() {
+        var q = new FlCjsPlayer.Q(function() {
             assert.ok(true);
             done();
         });
@@ -35,7 +35,7 @@ describe('CreateJS Player Q', function() {
         });
     });
     it('should throw error when passed wrong type handler', function() {
-        var q = new CjsPlayer.Q();
+        var q = new FlCjsPlayer.Q();
 
         assert.throws(function() {
             q.addHandler(null);

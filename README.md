@@ -1,4 +1,4 @@
-# CreateJS Player for FlashCC.
+# FlashCC CreateJS Player
 
 本プロダクトは以下の機能を提供します。
 
@@ -14,22 +14,9 @@
 - 簡易的な UserAgent 判定
 - CjsPlayer.AssetLoader による manifest に記述されたアセットの読み込み
 - CjsPlayer.Q による、複数個のコールバックを管理しながら全ての完了を管理するキューイングの仕組み
-- CreateJS を拡張し、オリジナルメソッドの追加
-
-    - MovieClip.gotoAndPlayWithCallback
-
-        特定フレーム間を play し、callback を呼ぶ
-    
-    - Container.cloneWithSharingCache
-
-        Container (もしくは Container を継承したオブジェクト) を clone する際に、cache している内部の canvas を使い回す
-
-    - Container._getObjectsUnderPoint
-
-        Container (もしくは Container を継承したオブジェクト) の hitTest を改善する
 
 
-## ファイル構成
+## Files
 
 ```
 # Minify & Concat されたファイル群
@@ -40,22 +27,17 @@ dist
 src
 ├── cjs-player.js             // CreateJS Player のソース
 ├── cjs-player.AssetLoader.js // CreateJS Player AssetLoader のソース
-├── cjs-player.Q.js           // CreateJS Player Q のソース
-└── extensions                // CreateJS を拡張する機能のソースを入れたディレクトリ
-        └── *.js              // CreateJS を拡張する機能のソースたち。
-                                 // ファイル名の規則は cjs.{TARGET_OBJECT}.{METHOD_NAME}.js とする
+└── cjs-player.Q.js           // CreateJS Player Q のソース
 ```
 
 通常、使用するだけであれば dist/cjs-player.all.js を読み込んでください。
 
 **注意**
 
-- Extensions を使用する場合、必ず CreateJS 本体のファイル群が読み込まれたあとで Extensions のファイルを読み込んでください。.all.js を使用する場合も同様です。(あらかじめ concat して minify してしまうのがおすすめです)
-
 
 ## Usage
 
-詳細なドキュメントは [API Documentation](https://github.dena.jp/pages/takahashi-kei/createjs-player/) で確認できます。
+詳細なドキュメントは [API Documentation]() で確認できます。
 
 ### CreateJS Player
 
@@ -76,7 +58,7 @@ var player = new CjsPlayer(
 // autostart: true なので読み込み終了後、再生が始まります
 ```
 
-- 詳細なオプションは [ここ](https://github.dena.jp/pages/takahashi-kei/createjs-player/#!/api/CjsPlayer) にあります
+- 詳細なオプションは [ここ]() にあります
 
 
 ###  CreateJS Player AssetLoader
@@ -134,121 +116,51 @@ setTimeout(function() {
 });
 ```
 
-### Extensions
-
-#### createjs.MovieClip.gotoAndPlayWithCallback
-
-命名規則に従った特定のラベル間を再生し、終了ラベル到達時に callback を発火します。
-
-命名規則は、 **終了ラベルにおいて {再生ラベル}_end となるように _end をつけておく** これだけです。
-
-[ドキュメント](https://github.dena.jp/pages/takahashi-kei/createjs-player/#!/api/createjs.MovieClip)
-
-**注意**
-
-- createjs.MovieClip オブジェクトを拡張するので、Container 等には上記のメソッドは生えません
-
-```javascript
-// someMC には play, play_end というラベル名が付いているとする 
-someMC.gotoAndPlayWithCallback('play', function() {
-    // play_end に到達した瞬間に実行される    
-});
-```
-
-
-#### createjs.Container.cloneWithSharingCache
-
-シンボルを clone する際に、対象のシンボルのキャッシュ情報を引き継いだシンボルを生成します。
-
-これにより、同一のシンボルでもキャッシュが別、というようなことが起こりづらくなるため、より省メモリにシンボルを生成することができます。
-
-[ドキュメント](https://github.dena.jp/pages/takahashi-kei/createjs-player/#!/api/createjs.Container)
-
-**注意**
-
-- createjs.Container オブジェクトを拡張するので、 Container オブジェクトから拡張される MovieClip などでもメソッドが使用できます 
-- キャッシュ情報を共有しているシンボルのいずれかでキャッシュの更新を行うと、全てのシンボルの描画情報が更新されます
-
-```javascript
-var newMC = someMC.cloneWithSharingCache();
-
-// キャッシュ情報は同一なので true となる
-console.log(newMC.cacheID === someMC.cache);
-```
-
-
-#### createjs.Container._getObjectsUnderPoint
-
-[この記事](http://qiita.com/damele0n/items/e9c36524e18b0f38a079) の通り、iOS7 on iPhone4 では hitArea に対する hitTest が上手く動作しません。
-
-このコードで修正は可能ですが、下記のリスクを抱えるので注意してください
-
-- hitArea が何らかの方法で変形されてる(scale がかかってる)とうまくいかないかもしれない
-- 矩形の範囲しか指定できない = hitTest が全部矩形で判断されてしまう
-
-この方法以外では、現状は逃げ道がありません。
-
-iOS7 on iPhone4 のサポートを切ることも視野に入れてください。
-
-
-
-## サポート情報
+## Changelog
 
 CreateJS のバージョンは、常に最新のもので確認しています。
 
-- 0.2.0:
+- 0.1.0:
 
     * EaselJS 0.7.1 released
     * TweenJS 0.5.1 released
     * PreloadJS 0.4.1 released
 
-    までサポート
+    まで確認済み
 
-## contribute
 
-#### 準備
+## For contributor
 
-まず開発に必要な npm と bower たちを入れます
+### setup the development environment
+
 ```shell
-$ npm run develop
-...
+$ npm run setup-dev
 $ npm install
-... 
 $ bower install
 ```
 
-
-#### テスト
+### test
 
 ```shell
 $ npm test # or gulp test
 ```
 
-#### ドキュメント生成
+### release and create document
 
 ```shell
-$ gulp document
-```
-
-ドキュメントは docs/ 以下に生成されます。
-
-docs/ 以下は gh-pages の submodule となっているため、まず docs/ の更新を push したのち、親のブランチに add し、push してください。
-
-#### リリース
-
-```shell
+# release
 $ gulp
-... # dist/ 以下にファイルがはき出される
+
+# create document
+$ gulp document
 ```
 
 
 ## License
 
-来世は外部で公開したい
+MIT License
 
 
 ## Author
 
-Kei Takahashi [kei.takahashi@dena.com](kei.takahashi@dena.com)
-
-kei@irc
+[@dameleon](https://twitter.com/damele0n)

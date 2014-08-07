@@ -4,24 +4,23 @@ var TEST_CJS_LIB_NAME = 'sample_cjs';
 var bind = require('./lib/Function.bind.js');
 var assert = require('power-assert');
 
-describe('CreateJS Player', function() {
+describe('FL-CJS Player', function() {
     before(function() {
-        var fixture = document.createElement('div');
+        var canvas = document.createElement('canvas');
 
-        fixture.id = 'fixture';
-        fixture.innerHTML = __html__['test/fixtures/canvas.html'];
-        document.body.appendChild(fixture);
+        canvas.id = 'canvas';
+        document.body.appendChild(canvas);
     });
 
     it('should exist constructors and static methods in global', function() {
-        var FLCjsPlayer = global.FLCjsPlayer;
+        var FlCjsPlayer = global.FlCjsPlayer;
 
-        assert(typeof FLCjsPlayer === 'function');
+        assert(typeof FlCjsPlayer === 'function');
     });
 
     it('should have any static properties', function() {
-        assert(typeof FLCjsPlayer.STATES === 'object');
-        assert(typeof FLCjsPlayer.env === 'object');
+        assert(typeof FlCjsPlayer.STATES === 'object');
+        assert(typeof FlCjsPlayer.env === 'object');
     });
 
     describe('instantiation', function() {
@@ -29,9 +28,9 @@ describe('CreateJS Player', function() {
             this.canvas = document.getElementById('canvas');
         });
         it('should initialize with 2 arguments', function() {
-            var player = new FLCjsPlayer(this.canvas, TEST_CJS_LIB_NAME);
+            var player = new FlCjsPlayer(this.canvas, TEST_CJS_LIB_NAME);
 
-            assert(player.state === FLCjsPlayer.STATES.INITIALIZE);
+            assert(player.state === FlCjsPlayer.STATES.INITIALIZE);
         });
         it('should initialize with 3 arguments', function() {
             var option = {
@@ -41,23 +40,23 @@ describe('CreateJS Player', function() {
                     height: 100
                 }
             };
-            var player = new FLCjsPlayer(this.canvas, TEST_CJS_LIB_NAME, option);
+            var player = new FlCjsPlayer(this.canvas, TEST_CJS_LIB_NAME, option);
 
-            assert(player.state === FLCjsPlayer.STATES.INITIALIZE);
+            assert(player.state === FlCjsPlayer.STATES.INITIALIZE);
             assert(player.setting.hd === option.hd);
             assert(player.properties.width === option.properties.width);
             assert(player.properties.height === option.properties.height);
         });
         it('should initialize, when passed argument 1 type of string', function() {
-            var player = new FLCjsPlayer('#canvas', TEST_CJS_LIB_NAME);
+            var player = new FlCjsPlayer('#canvas', TEST_CJS_LIB_NAME);
 
-            assert(player.state === FLCjsPlayer.STATES.INITIALIZE);
+            assert(player.state === FlCjsPlayer.STATES.INITIALIZE);
         });
         it('should initialize with load assets', function(done) {
-            var player = new FLCjsPlayer('#canvas', TEST_CJS_LIB_NAME);
+            var player = new FlCjsPlayer('#canvas', TEST_CJS_LIB_NAME);
 
             player.load(function() {
-                assert(player.state = FLCjsPlayer.STATES.LOADED);
+                assert(player.state = FlCjsPlayer.STATES.LOADED);
 
                 var manifests = player.properties.manifest;
                 var imagesNamespace = player._ns.images;
@@ -71,10 +70,10 @@ describe('CreateJS Player', function() {
     });
 
     describe('instance state', function() {
-        var STATES = FLCjsPlayer.STATES;
+        var STATES = FlCjsPlayer.STATES;
 
         beforeEach(function() {
-            this.player = new FLCjsPlayer('#canvas', TEST_CJS_LIB_NAME);
+            this.player = new FlCjsPlayer('#canvas', TEST_CJS_LIB_NAME);
         });
 
         it('should be initialize', function() {
@@ -88,10 +87,9 @@ describe('CreateJS Player', function() {
         });
         it('should be playing', function(done) {
             this.player.load(function() {
-                this.player.play(function() {
-                    assert.equal(this.player.state, STATES.PLAYING);
-                    done();
-                }.bind(this));
+                this.player.play();
+                assert.equal(this.player.state, STATES.PLAYING);
+                done();
             }.bind(this));
         });
         it('should be stoped', function(done) {
@@ -164,7 +162,7 @@ describe('CreateJS Player', function() {
         });
 
         it('should set HD mode', function() {
-            var player = new FLCjsPlayer(this.canvas, TEST_CJS_LIB_NAME, {
+            var player = new FlCjsPlayer(this.canvas, TEST_CJS_LIB_NAME, {
                 hd: true
             });
 
@@ -172,17 +170,17 @@ describe('CreateJS Player', function() {
         });
 
         it('should start automatically', function(done) {
-            var player = new FLCjsPlayer(this.canvas, TEST_CJS_LIB_NAME, {
+            var player = new FlCjsPlayer(this.canvas, TEST_CJS_LIB_NAME, {
                 autostart: true,
                 onload: function() {
-                    assert.equal(FLCjsPlayer.STATES.PLAYING, player.state);
+                    assert.equal(FlCjsPlayer.STATES.PLAYING, player.state);
                     done();
                 }
             });
         });
 
-        it('should resize screen size', function() {
-            var player = new FLCjsPlayer(this.canvas, TEST_CJS_LIB_NAME, {
+        it('should resize screen size', function(done) {
+            var player = new FlCjsPlayer(this.canvas, TEST_CJS_LIB_NAME, {
                 fullscreen: true
             });
             var contentWidth = player.properties.width;
@@ -190,37 +188,36 @@ describe('CreateJS Player', function() {
             var scale = contentHeight / contentWidth;
 
             player.load(function() {
-                player.play(function() {
-                    var innerWidth = global.innerWidth;
-                    var innerHeight = global.innerHeight;
-                    var windowScale = innerHeight / innerWidth;
-                    var canvas = this.canvas;
-                    var canvasStyle = canvas.style;
+                player.play();
+                var innerWidth = global.innerWidth;
+                var innerHeight = global.innerHeight;
+                var windowScale = innerHeight / innerWidth;
+                var canvas = this.canvas;
+                var canvasStyle = canvas.style;
 
-                    // window 比率の方が大きいので横がピッタリになる
-                    if (scale < windowScale) {
-                        assert.equal(canvasStyle.width, innerWidth + 'px');
-                        assert.equal(canvasStyle.height, (innerWidth * scale) + 'px');
-                    }
-                    // window 比率の方が小さいので縦がぴったりになる
-                    else if (scale > windowScale) {
-                        assert.equal(canvasStyle.height, innerHeight + 'px');
-                        assert.equal(canvasStyle.width, (innerHeight / scale) + 'px');
-                    }
-                    // window とコンテンツの比率がピッタリの場合は、そのままのサイズになる
-                    else {
-                        assert.equal(canvasStyle.width, innerWidth + 'px');
-                        assert.equal(canvasStyle.height, innerHeight + 'px');
-                    }
-                    done();
-                }.bind(this));
+                // window 比率の方が大きいので横がピッタリになる
+                if (scale < windowScale) {
+                    assert.equal(canvasStyle.width, innerWidth + 'px');
+                    assert.equal(canvasStyle.height, (innerWidth * scale) + 'px');
+                }
+                // window 比率の方が小さいので縦がぴったりになる
+                else if (scale > windowScale) {
+                    assert.equal(canvasStyle.height, innerHeight + 'px');
+                    assert.equal(canvasStyle.width, (innerHeight / scale) + 'px');
+                }
+                // window とコンテンツの比率がピッタリの場合は、そのままのサイズになる
+                else {
+                    assert.equal(canvasStyle.width, innerWidth + 'px');
+                    assert.equal(canvasStyle.height, innerHeight + 'px');
+                }
+                done();
             });
         })
     });
 
     describe('instance methods', function() {
         beforeEach(function() {
-            this.player = new FLCjsPlayer('#canvas', TEST_CJS_LIB_NAME);
+            this.player = new FlCjsPlayer('#canvas', TEST_CJS_LIB_NAME);
         });
         it('should add new manifest data', function(done) {
             var data = {
@@ -274,31 +271,31 @@ describe('CreateJS Player', function() {
     describe('exception', function() {
         it('should throw error when undefined canvas', function() {
             assert.throws(function() {
-                new FLCjsPlayer('dameleon', TEST_CJS_LIB_NAME);
-            }, /Missing element error/);
+                new FlCjsPlayer('dameleon', TEST_CJS_LIB_NAME);
+            }, /Element with the QuerySelector "dameleon" does not exist/);
             assert.throws(function() {
-                new FLCjsPlayer(1, TEST_CJS_LIB_NAME);
+                new FlCjsPlayer(1, TEST_CJS_LIB_NAME);
             }, /Argument type error/);
             assert.throws(function() {
-                new FLCjsPlayer(null, TEST_CJS_LIB_NAME);
+                new FlCjsPlayer(null, TEST_CJS_LIB_NAME);
             });
         })
         it('should throw error when undefined namespace', function() {
             assert.throws(function() {
-                new FLCjsPlayer('#canvas', TEST_CJS_LIB_NAME, {
+                new FlCjsPlayer('#canvas', TEST_CJS_LIB_NAME, {
                     namespaces: {
                         lib: 'dameleon'
                     }
                 });
-            }, /Missing object error/);
+            }, /Namespace "dameleon" does not exist in global object/);
         });
         it('should throw error when call getMovieClip with wrong argument', function(done) {
-            var player = new FLCjsPlayer('#canvas', TEST_CJS_LIB_NAME, {
+            var player = new FlCjsPlayer('#canvas', TEST_CJS_LIB_NAME, {
                 autostart: true,
                 onload: function() {
                     assert.throws(function() {
                         player.getMovieClip();
-                    }, /Argument error/);
+                    }, /Missing argument error/);
                     assert.throws(function() {
                         player.getMovieClip(1);
                     }, /Argument type error/);
@@ -307,7 +304,7 @@ describe('CreateJS Player', function() {
             });
         });
         it('should throw error when call getApi with undefined movieclip', function(done) {
-            var player = new FLCjsPlayer('#canvas', TEST_CJS_LIB_NAME, {
+            var player = new FlCjsPlayer('#canvas', TEST_CJS_LIB_NAME, {
                 autostart: true,
                 onload: function() {
                     assert.throws(function() {
@@ -318,7 +315,7 @@ describe('CreateJS Player', function() {
             });
         });
         it('should throw error when call setManifestData with wrong argument', function(done) {
-            var player = new FLCjsPlayer('#canvas', TEST_CJS_LIB_NAME, {
+            var player = new FlCjsPlayer('#canvas', TEST_CJS_LIB_NAME, {
                 autostart: true,
                 onload: function() {
                     assert.throws(function() {
@@ -333,7 +330,7 @@ describe('CreateJS Player', function() {
         });
         it('should throw error when missing root movieclip', function() {
             assert.throws(function() {
-                var player = new FLCjsPlayer('#canvas', 'hogefugapiyo', {
+                var player = new FlCjsPlayer('#canvas', 'hogefugapiyo', {
                     autostart: true,
                 });
             }, /Missing object error/);

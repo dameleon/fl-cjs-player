@@ -5,9 +5,9 @@ var assert = require('power-assert');
 
 describe('CreateJS Player extend', function() {
     it('should exist constructor in global', function() {
-        var FLCjsPlayer = global.FLCjsPlayer;
+        var FlCjsPlayer = global.FlCjsPlayer;
 
-        assert(typeof FLCjsPlayer.extend === 'function');
+        assert(typeof FlCjsPlayer.extend === 'function');
     });
     it('should extend with object', function() {
         var hoge = {};
@@ -23,7 +23,7 @@ describe('CreateJS Player extend', function() {
                     dameleon: undefined
                 }
         };
-        var res = FLCjsPlayer.extend(hoge, fuga, piyo);
+        var res = FlCjsPlayer.extend(hoge, fuga, piyo);
 
         assert.equal(res.foo, 1);
         assert.equal(res.bar.dameleon, undefined);
@@ -34,7 +34,7 @@ describe('CreateJS Player extend', function() {
         var hoge = [];
         var fuga = [1,2,3,4];
         var piyo = [5,6,7];
-        var res = FLCjsPlayer.extend(hoge, fuga, piyo);
+        var res = FlCjsPlayer.extend(hoge, fuga, piyo);
 
         assert.equal(hoge.length, 4);
         assert.equal(hoge[0], 5);

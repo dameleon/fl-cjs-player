@@ -29,7 +29,7 @@ gulp.task('dist', function() {
 			'src/fl-cjs-player.asset-loader.js',
 			'src/fl-cjs-player.q.js',
 		])
-		.pipe(concat('cjs-player.combined.js'))
+		.pipe(concat('fl-cjs-player.combined.js'))
         .pipe(header(banner, { name: 'FL-CJS Player', pkg: pkg }))
         .pipe(gulp.dest('dist'));
 
@@ -45,7 +45,7 @@ gulp.task('dist', function() {
 			'src/fl-cjs-player.q.js',
 			'src/extensions/*.js',
 		])
-        .pipe(concat('cjs-player.all.js'))
+        .pipe(concat('fl-cjs-player.all.js'))
         .pipe(uglify({ outSourceMap: true, preserveComments: 'some' }))
         .pipe(header(banner, { name: 'FL-CJS Player', pkg: pkg }))
         .pipe(gulp.dest('dist'));

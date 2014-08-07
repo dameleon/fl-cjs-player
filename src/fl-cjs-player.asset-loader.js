@@ -3,8 +3,8 @@
 
 var document = global.document;
 
-if (!global.FLCjsPlayer) {
-    throw new Error('"FLCjsPlayer" does not exist in global');
+if (!global.FlCjsPlayer) {
+    throw new Error('"FlCjsPlayer" does not exist in global');
 }
 
 var defaults = {
@@ -14,14 +14,14 @@ var defaults = {
 /**
  * 汎用的なアセットローダ(仮)
  *
- * @class FLCjsPlayer.AssetLoader
+ * @class FlCjsPlayer.AssetLoader
  * @param {Object} option
  *      オプション設定のためのオブジェクト
  * @param {String} [option.basePath='']
  *      アセットをロードするためのベースパスを設定
  */
 function AssetLoader(option) {
-    this.setting = FLCjsPlayer.extend({}, defaults, option);
+    this.setting = FlCjsPlayer.extend({}, defaults, option);
     this.listeners = {
         // EVENT: []
     };
@@ -53,7 +53,7 @@ AssetLoader.prototype = {
  * 現状 load or error を受け取って処理する
  *
  * @method handleEvent
- * @member FLCjsPlayer.AssetLoader
+ * @member FlCjsPlayer.AssetLoader
  * @param {Object} ev
  *      イベントオブジェクト
  */
@@ -81,7 +81,7 @@ function _handleEvent(ev) {
  * Flash for HTML5 の CreateJS に付加される manifest 情報を元に、アセット群を読み込む
  *
  * @method loadWithManifests
- * @member FLCjsPlayer.AssetLoader
+ * @member FlCjsPlayer.AssetLoader
  * @param {Array} manifests
  *      manifest 情報が入った Array
  */
@@ -95,7 +95,7 @@ function _loadWithManifests(manifests) {
     }
     var that = this;
     var qid;
-    var q = new FLCjsPlayer.Q(function() {
+    var q = new FlCjsPlayer.Q(function() {
         that.handleManifestLoaded(qid);
     });
 
@@ -111,7 +111,7 @@ function _loadWithManifests(manifests) {
  * QueueID と1つの manifest 情報から Image インスタンスを生成し、イベントと読み込みの処理を行う
  *
  * @method _loadItem
- * @member FLCjsPlayer.AssetLoader
+ * @member FlCjsPlayer.AssetLoader
  * @private
  * @param {Number} qid
  *      読み込みを行う Queue ハンドラの ID
@@ -133,7 +133,7 @@ function _loadItem(qid, manifest) {
  * manifests の読み込み完了処理を行う
  *
  * @method _handleManifestLoaded
- * @member FLCjsPlayer.AssetLoader
+ * @member FlCjsPlayer.AssetLoader
  * @private
  * @param {Number} qid
  *      完了処理を行う QueueID
@@ -152,7 +152,7 @@ function _handleManifestLoaded(qid) {
  * イベントハンドラの登録を行う
  *
  * @method on
- * @member FLCjsPlayer.AssetLoader
+ * @member FlCjsPlayer.AssetLoader
  * @param {String} type
  *      イベント名
  * @param {Function} listener
@@ -168,7 +168,7 @@ function _on(type, listener) {
  * イベントハンドラの登録解除を行う
  *
  * @method off
- * @member FLCjsPlayer.AssetLoader
+ * @member FlCjsPlayer.AssetLoader
  * @param {String} type
  *      イベント名
  * @param {Function} listener
@@ -188,7 +188,7 @@ function _off(type, listener) {
  * イベントを発火する
  *
  * @method _fire
- * @member FLCjsPlayer.AssetLoader
+ * @member FlCjsPlayer.AssetLoader
  * @private
  * @param {String} type
  *      発火するイベント名
@@ -215,7 +215,7 @@ function _fire() {
  * イベントハンドラをもつ配列を取得する
  *
  * @method _getListenerListByType
- * @member FLCjsPlayer.AssetLoader
+ * @member FlCjsPlayer.AssetLoader
  * @private
  * @param {String} type
  *      取得するイベントの名前
@@ -230,7 +230,7 @@ function _getListenerListByType(type) {
  * 読み込みが完了したファイルを QueueID を元に一時的な配列へ保存する
  *
  * @method _pushToTemporaryFileList
- * @member FLCjsPlayer.AssetLoader
+ * @member FlCjsPlayer.AssetLoader
  * @private
  * @param {Number} qid
  *      保存先の QueueID
@@ -248,7 +248,7 @@ function _pushToTemporaryFileList(qid, file) {
  * QueueID を元に Queue を進める
  *
  * @method _tickQueue
- * @member FLCjsPlayer.AssetLoader
+ * @member FlCjsPlayer.AssetLoader
  * @private
  * @param {Number} qid
  *      対象の QueueID
@@ -263,7 +263,7 @@ function _tickQueue(qid) {
  * イベントオブジェクトを生成する
  *
  * @method __createEvent
- * @member FLCjsPlayer.AssetLoader
+ * @member FlCjsPlayer.AssetLoader
  * @private
  * @param {String} type
  *      生成するイベントのタイプ
@@ -276,7 +276,7 @@ function __createEvent(type) {
 }
 
 // export
-global.FLCjsPlayer.AssetLoader = AssetLoader;
+global.FlCjsPlayer.AssetLoader = AssetLoader;
 
 
 })(this.self || global, void 0);

@@ -1,3 +1,4 @@
+/*! fl-cjs-player // @version 0.1.0, @license MIT, @Author dameleon <dameleon@gmail.com> */
 ;(function(global, undefined) {
 'use strict';
 
@@ -804,5 +805,410 @@ function __extend() {
         }
     }
 }
+
+})(this.self || global, void 0);
+
+;(function(global, undefined) {
+'use strict';
+
+var document = global.document;
+
+if (!global.FlCjsPlayer) {
+    throw new Error('"FlCjsPlayer" does not exist in global');
+}
+
+var defaults = {
+    basePath: ''
+};
+
+/**
+ * 汎用的なアセットローダ(仮)
+ *
+ * @class FlCjsPlayer.AssetLoader
+ * @param {Object} option
+ *      オプション設定のためのオブジェクト
+ * @param {String} [option.basePath='']
+ *      アセットをロードするためのベースパスを設定
+ */
+function AssetLoader(option) {
+    this.setting = FlCjsPlayer.extend({}, defaults, option);
+    this.listeners = {
+        // EVENT: []
+    };
+    this.queue = {
+        // qid: Q
+    };
+    this.tmpFiles = {
+        // qid: [ file ,...]
+    };
+}
+
+AssetLoader.prototype = {
+    constructor              : AssetLoader,
+    handleEvent              : _handleEvent,
+    handleManifestLoaded     : _handleManifestLoaded,
+    loadWithManifests        : _loadWithManifests,
+    off                      : _off,
+    on                       : _on,
+    _fire                    : _fire,
+    _getListenerListByType   : _getListenerListByType,
+    _loadItem                : _loadItem,
+    _pushToTemporaryFileList : _pushToTemporaryFileList,
+    _tickQueue               : _tickQueue,
+};
+
+
+/**
+ * Image インスタンスに対するイベントハンドラ
+ * 現状 load or error を受け取って処理する
+ *
+ * @method handleEvent
+ * @member FlCjsPlayer.AssetLoader
+ * @param {Object} ev
+ *      イベントオブジェクト
+ */
+function _handleEvent(ev) {
+    var target = ev.target;
+
+    target.removeEventListener('load', this);
+    target.removeEventListener('error', this);
+
+    switch (ev.type) {
+        case 'load':
+            var qid = target.__qid;
+
+            this._fire('fileLoaded', target);
+            this._pushToTemporaryFileList(qid, target);
+            this._tickQueue(qid);
+            break;
+        case 'error':
+            this._fire('error', target);
+            break;
+    }
+}
+
+/**
+ * Flash for HTML5 の CreateJS に付加される manifest 情報を元に、アセット群を読み込む
+ *
+ * @method loadWithManifests
+ * @member FlCjsPlayer.AssetLoader
+ * @param {Array} manifests
+ *      manifest 情報が入った Array
+ */
+function _loadWithManifests(manifests) {
+    if (!Array.isArray(manifests)) {
+        throw new Error('Argument type error. First argument must be Array');
+    } else if (manifests.length < 1) {
+        console.warn('Passed through empty manifests');
+        this._fire('manifestLoaded');
+        return;
+    }
+    var that = this;
+    var qid;
+    var q = new FlCjsPlayer.Q(function() {
+        that.handleManifestLoaded(qid);
+    });
+
+    qid = q.id;
+    this.queue[qid] = q;
+    for (var i = 0, manifest; manifest = manifests[i]; i++) {
+        q.add();
+        this._loadItem(qid, manifest);
+    }
+}
+
+/**
+ * QueueID と1つの manifest 情報から Image インスタンスを生成し、イベントと読み込みの処理を行う
+ *
+ * @method _loadItem
+ * @member FlCjsPlayer.AssetLoader
+ * @private
+ * @param {Number} qid
+ *      読み込みを行う Queue ハンドラの ID
+ * @param {Object} manifest
+ *      読み込む manifest のデータ
+ */
+function _loadItem(qid, manifest) {
+    var tag = new Image();
+    var src = (this.setting.basePath || '') + manifest.src;
+
+    tag.addEventListener('load', this);
+    tag.addEventListener('error', this);
+    tag.id = manifest.id;
+    tag.__qid = qid;
+    tag.src = src;
+}
+
+/**
+ * manifests の読み込み完了処理を行う
+ *
+ * @method _handleManifestLoaded
+ * @member FlCjsPlayer.AssetLoader
+ * @private
+ * @param {Number} qid
+ *      完了処理を行う QueueID
+ */
+function _handleManifestLoaded(qid) {
+    var tmpFileList = this.tmpFiles[qid];
+
+    this.tmpFiles[qid] = null;
+    delete this.tmpFiles[qid];
+    this.queue[qid] = null;
+    delete this.queue[qid];
+    this._fire('manifestsLoaded', tmpFileList);
+}
+
+/**
+ * イベントハンドラの登録を行う
+ *
+ * @method on
+ * @member FlCjsPlayer.AssetLoader
+ * @param {String} type
+ *      イベント名
+ * @param {Function} listener
+ *      イベントハンドラ
+ */
+function _on(type, listener) {
+    var listenerList = this._getListenerListByType(type);
+
+    listenerList.push(listener);
+}
+
+/**
+ * イベントハンドラの登録解除を行う
+ *
+ * @method off
+ * @member FlCjsPlayer.AssetLoader
+ * @param {String} type
+ *      イベント名
+ * @param {Function} listener
+ *      イベントハンドラ
+ */
+function _off(type, listener) {
+    var listenerList = this._getListenerListByType(type);
+    var index = listenerList.indexOf(listener);
+
+    if (listenerList.length < 1 || index < 0) {
+        return;
+    }
+    listenerList.splice(index, 1);
+}
+
+/**
+ * イベントを発火する
+ *
+ * @method _fire
+ * @member FlCjsPlayer.AssetLoader
+ * @private
+ * @param {String} type
+ *      発火するイベント名
+ * @param {Any} [argument]
+ *      イベントオブジェクトの .result プロパティに紐付けるデータ
+ */
+function _fire() {
+    var args = [].slice.call(arguments);
+    var type = args.shift();
+    var listenerList = this._getListenerListByType(type);
+
+    if (listenerList.length < 1) {
+        return;
+    }
+    var ev = __createEvent(type);
+
+    ev.result = (args.length > 1) ? args : args[0];
+    for (var i = 0, listener; listener = listenerList[i]; i++) {
+        listener.call(null, ev);
+    }
+}
+
+/**
+ * イベントハンドラをもつ配列を取得する
+ *
+ * @method _getListenerListByType
+ * @member FlCjsPlayer.AssetLoader
+ * @private
+ * @param {String} type
+ *      取得するイベントの名前
+ * @return {Array}
+ *      イベントハンドラを持つ配列
+ */
+function _getListenerListByType(type) {
+    return (Array.isArray(this.listeners[type])) ? this.listeners[type] : (this.listeners[type] = []);
+}
+
+/**
+ * 読み込みが完了したファイルを QueueID を元に一時的な配列へ保存する
+ *
+ * @method _pushToTemporaryFileList
+ * @member FlCjsPlayer.AssetLoader
+ * @private
+ * @param {Number} qid
+ *      保存先の QueueID
+ * @param {Object} file
+ *      保存するファイルのオブジェクトデータ
+ *
+ */
+function _pushToTemporaryFileList(qid, file) {
+    var list = (Array.isArray(this.tmpFiles[qid])) ? this.tmpFiles[qid] : (this.tmpFiles[qid] = []);
+
+    list[list.length] = file;
+}
+
+/**
+ * QueueID を元に Queue を進める
+ *
+ * @method _tickQueue
+ * @member FlCjsPlayer.AssetLoader
+ * @private
+ * @param {Number} qid
+ *      対象の QueueID
+ */
+function _tickQueue(qid) {
+    this.queue[qid].tick();
+}
+
+
+// private methods
+/**
+ * イベントオブジェクトを生成する
+ *
+ * @method __createEvent
+ * @member FlCjsPlayer.AssetLoader
+ * @private
+ * @param {String} type
+ *      生成するイベントのタイプ
+ */
+function __createEvent(type) {
+    var event = document.createEvent('Event');
+
+    event.initEvent(type, true, true);
+    return event;
+}
+
+// export
+global.FlCjsPlayer.AssetLoader = AssetLoader;
+
+
+})(this.self || global, void 0);
+
+;(function(global, undefined) {
+'use strict';
+
+if (!global.FlCjsPlayer) {
+    throw new Error('"FlCjsPlayer" does not exist in global');
+}
+
+var qid = 0;
+
+/**
+ * キューの発行、完了を管理する
+ *
+ * @class FlCjsPlayer.Q
+ * @param {Function} callback
+ *      インスタンス化時に渡すコールバックハンドラ
+ */
+function Q(callback) {
+    this.id = qid++;
+    this.length = 0;
+    this.listeners = [];
+    if (callback) {
+        this.addHandler(callback);
+    }
+}
+
+Q.prototype = {
+    constructor: Q,
+    add        : _add,
+    addHandler : _addHandler,
+    fire       : _fire,
+    ing        : _ing,
+    tick       : _tick
+};
+
+/**
+ * コールバックハンドラを登録する
+ *
+ * @method addHandler
+ * @member FlCjsPlayer.Q
+ * @param {Function} callback
+ *      登録するコールバック関数
+ */
+function _addHandler(callback) {
+    if (typeof callback !== 'function') {
+        throw new Error('Argument type error. First argument must be Function');
+    }
+    this.listeners.push(callback);
+}
+
+/**
+ * 待機キューを発行し、コールバック用の関数を返す。命名の由来は Queueing
+ *
+ * @method ing
+ * @member FlCjsPlayer.Q
+ * @param {Function} [callback]
+ *      コールバック用の関数が発火した際に呼ぶオプショナルなコールバック関数
+ */
+function _ing(callback) {
+    var that = this;
+
+    this.length++;
+    return function() {
+        var args = arguments;
+
+        that.length--;
+        callback && callback.apply(null, args);
+        if (that.length < 1) {
+            that.fire.apply(that, args);
+        }
+    };
+}
+
+/**
+ * 全てのコールバックハンドラを発火する
+ *
+ * @method fire
+ * @member FlCjsPlayer.Q
+ * @param {Any} args
+ *      コールバックハンドラへ渡す引数。複数指定可能。
+ */
+function _fire() {
+    var args = arguments;
+    var listeners = this.listeners;
+    var listener;
+
+    while (!!(listener = listeners.shift())) {
+        listener.apply(null, args);
+    }
+}
+
+/**
+ * キューを進める
+ *
+ * @method tick
+ * @member FlCjsPlayer.Q
+ * @param {Any} args
+ *      キューが発火する場合に、コールバックハンドラへ渡す引数。複数指定可能。
+ */
+function _tick() {
+    this.length--;
+    if (this.length < 1) {
+        this.fire.apply(this, arguments);
+    }
+}
+
+/**
+ * キューを発行する
+ *
+ * @method add
+ * @member FlCjsPlayer.Q
+ */
+function _add() {
+    this.length++;
+}
+
+
+// export
+global.FlCjsPlayer.Q = Q;
+
 
 })(this.self || global, void 0);
