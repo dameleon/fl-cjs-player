@@ -1,0 +1,32 @@
+{
+  "name": "fl-cjs-player",
+  "version": "0.1.0",
+  "authors": [
+    "dameleon <dameleon@gmail.com>"
+  ],
+  "description": "Library to play CreateJS files published from FlashCC",
+  "main": "dist/cjs-player.all.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "CreateJS",
+    "FlashCC"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "coverage",
+    "bower_components",
+    "test",
+    "docs",
+    "karma.conf.js"
+  ],
+  "dependencies": {
+    "easeljs": "*",
+    "createjs-tweenjs": "*",
+    "createjs-soundjs": "*",
+    "createjs-preloadjs": "*"
+  }
+}
