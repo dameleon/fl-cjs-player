@@ -147,7 +147,13 @@ FlCjsPlayer.prototype = {
 };
 
 ////// Exports
-global.FlCjsPlayer = FlCjsPlayer;
+if (!('process' in global) && (typeof global.define === 'function' && global.define.amd)) {
+    define([], function() {
+        return FlCjsPlayer;
+    });
+} else {
+    global.FlCjsPlayer = FlCjsPlayer;
+}
 
 
 ////// member methods
