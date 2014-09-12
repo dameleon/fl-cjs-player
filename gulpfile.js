@@ -51,7 +51,7 @@ gulp.task('dist', function() {
         .pipe(gulp.dest('dist'));
 });
 
-gulp.task('test', ['dist'], shell.task([
+gulp.task('test', ['lint', 'dist'], shell.task([
     'karma start'
 ]));
 

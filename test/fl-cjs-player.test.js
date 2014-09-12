@@ -266,6 +266,27 @@ describe('FL-CJS Player', function() {
                 done();
             }.bind(this));
         });
+        it('should stop createjs.Ticker', function(done) {
+            var cb = function(ev) {
+                this.player._ns.createjs.Ticker.removeEventListener('tick', cb);
+                assert(ev.paused);
+                done();
+            }.bind(this);
+
+            this.player._ns.createjs.Ticker.addEventListener('tick', cb);
+            this.player.stopTicker();
+        });
+        it('should restart createjs.Ticker', function(done) {
+            var cb = function(ev) {
+                this.player._ns.createjs.Ticker.removeEventListener('tick', cb);
+                assert.equal(ev.paused, false);
+                done();
+            }.bind(this);
+
+            this.player.stopTicker();
+            this.player._ns.createjs.Ticker.addEventListener('tick', cb);
+            this.player.startTicker();
+        });
     });
 
     describe('exception', function() {
