@@ -1,6 +1,6 @@
 {
   "name": "fl-cjs-player",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Library to play CreateJS files published from FlashCC",
   "devDependencies": {
     "browserify": "~3.44.2",

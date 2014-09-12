@@ -1,4 +1,4 @@
-/*! fl-cjs-player // @version 0.1.0, @license MIT, @Author dameleon <dameleon@gmail.com> */
+/*! fl-cjs-player // @version 0.1.1, @license MIT, @Author dameleon <dameleon@gmail.com> */
 ;(function(global, undefined) {
 'use strict';
 
