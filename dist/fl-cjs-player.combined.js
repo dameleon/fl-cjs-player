@@ -26,6 +26,7 @@ var defaults = {
     },
     onload         : null,
     properties     : null,
+    singlePlay     : false
 };
 var env = __getEnvData(global.navigator.userAgent);
 
@@ -144,6 +145,8 @@ FlCjsPlayer.prototype = {
     resume          : _resume,
     setManifestData : _setManifestData,
     stop            : _stop,
+    startTicker     : _startTicker,
+    stopTicker      : _stopTicker
 };
 
 ////// Exports
@@ -292,6 +295,7 @@ function _play() {
     }
     stage.addChild(rootMc);
     stage.update();
+    this.startTicker();
     ticker.setFPS(properties.fps);
     ticker.addEventListener('tick', stage);
     this.state = STATES.PLAYING;
@@ -309,6 +313,9 @@ function _stop() {
         this._ns.createjs.Ticker.removeEventListener('tick', this.stage);
         this.stage.clear();
     }
+    if (this.setting.singlePlay) {
+        this.stopTicker();
+    }
 }
 
 /**
@@ -323,6 +330,9 @@ function _pause() {
     }
     this.state = STATES.PAUSED;
     this._ns.createjs.Ticker.removeEventListener('tick', this.stage);
+    if (this.setting.singlePlay) {
+        this.stopTicker();
+    }
 }
 
 /**
@@ -337,6 +347,9 @@ function _resume() {
     }
     this.state = STATES.PLAYING;
     this._ns.createjs.Ticker.addEventListener('tick', this.stage);
+    if (this.setting.singlePlay) {
+        this.startTicker();
+    }
 }
 
 /**
@@ -519,6 +532,29 @@ function _destroy() {
     }
 }
 
+/**
+ * Tickerのpause状態を解除し、動作させる
+ *
+ * @member FlCjsPlayer
+ * @method startTicker
+ */
+function _startTicker() {
+    var Ticker = this._ns.createjs.Ticker;
+
+    if (Ticker.getPaused()) {
+        Ticker.setPaused(false);
+    }
+}
+
+/**
+ * Tickerをpause状態にする
+ *
+ * @member FlCjsPlayer
+ * @method stopTicker
+ */
+function _stopTicker() {
+    this._ns.createjs.Ticker.setPaused(true);
+}
 
 
 ////// private methods
